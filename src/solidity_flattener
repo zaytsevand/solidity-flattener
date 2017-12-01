@@ -12,6 +12,7 @@ def flatten_contract(solc_AST, output_dest, sol_version):
 	contract_source_regex = re.compile(r'ContractDefinition \".+\"(?:\n\s+Gas costs: \d+)?\n +Source: "(.+)"')
 	inheritance_regex = re.compile(r'InheritanceSpecifier(?:\n\s+Gas costs: \d+)?\n\s+Source: "(.+)"')
 	using_for_regex = re.compile(r'\n  UserDefinedTypeName "(.+)"')
+	carriage_return_regex = re.compile(r'\r')
 
 	contracts = contract_regex.findall(solc_AST)
 	contract_sources = {}
@@ -69,7 +70,7 @@ def flatten_contract(solc_AST, output_dest, sol_version):
 				print("\t\t" + unsat_depend + " (requires: {})".format(dependency_graph[unsat_depend]), file=sys.stderr)
 			return
 
-		output_solidity_code += ast.literal_eval('\"' + contract_sources[cname] + '\"') + "\n\n"
+		output_solidity_code += re.sub(carriage_return_regex, '', ast.literal_eval('\"' + contract_sources[cname] + '\"')) + "\n\n"
 		processed_contracts.update([cname])
 		del dependency_graph[cname]
 
